@@ -1,2 +1,2 @@
-# repo-manager
-Projeto para seleção de Magrathea Labs
+# repo-magrathea
+Projeto para seleção de estágio da Magrathea Labs

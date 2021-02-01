@@ -24,7 +24,7 @@
         </div>
         <input class="btn btn-primary" type="submit" value="Register">
     </form>
-
+    Please <a href="{% provider_login_url 'github' %}">Authenticate with GitHub</a>
     Already have an account? <a href="{% url 'login' %}">Log In here.</a>
 
 {% endblock %}
