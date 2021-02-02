@@ -18,7 +18,7 @@ class Repo(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=64)
     repo = models.ManyToManyField(Repo, blank=False, related_name = "tags")
-    user = models.ManyToManyField(User, related_name="tags")
+   
 
     def __str__(self):
         return f"{self.id}: name: {self.name}"

@@ -7,5 +7,10 @@ class RepoForm(ModelForm):
         model = Tag 
         fields = ['name']
 
+class  DelForm(ModelForm):
+    class Meta:
+        fields  =   ['name']
+    
+
 class EditForm(forms.Form):
     newName = forms.CharField(label="New Name")

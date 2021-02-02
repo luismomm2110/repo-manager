@@ -1,18 +1,18 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
-    <h1>Repo {{ repo.id }}</h1>
+    <h1>Repositorie: <span style="font-weight: normal"> {{ repo.name }} </span> </h1>
     ADD
     <form method = "post">
         {% csrf_token %}
         {{ form_name }}
-        <input type="submit", name = 'Add', value = "Add">
+        <input type="submit", name = 'add', value = "add">
     </form>
     {{error}}
     <ul>
-        <li>Name: {{ repo.name }}</li>
+        <li>Id: {{ repo.id }}</li>
         <li>Description: {{ repo.description}}</li>
-        <li>Link: {{ repo.link }}</li>
+        <li>Link: <a href= "{{repo.link}}"}"> {{repo.link}}</a></li>
         <li>Tags: 
             {%for tag in repo.tags.all%}
                 {{tag.name}}

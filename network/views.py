@@ -29,8 +29,7 @@ def index(request):
 
     for x in request.user.repos.all():
             if int(x.id) not in listId:
-                x.delete()
-                
+                x.de
         
     return render(request, "network/index.html", {
         "repos": request.user.repos.all(),
@@ -39,53 +38,11 @@ def index(request):
     })
 
 def login_view(request):
-    if request.method == "POST":
-
-        # Attempt to sign user in
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-
-        # Check if authentication successful
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse("index"))
-        else:
-            return render(request, "network/login.html", {
-                "message": "Invalid username and/or password."
-            })
-    else:
-        return render(request, "network/login.html")
+    return render(request, "network/login.html")
 
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("login"))
-
-def register(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
-
-        # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "network/register.html", {
-                "message": "Passwords must match."
-            })
-
-        # Attempt to create new user
-        try:
-            user = User.objects.create_user(username, email, password)
-            user.save()
-        except IntegrityError:
-            return render(request, "network/register.html", {
-                "message": "Username already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        return render(request, "network/register.html")
 
 def repo(request, repo_id):
         repo = request.user.repos.get(id=repo_id)
@@ -97,7 +54,7 @@ def repo(request, repo_id):
 
         if request.method == "POST":
 
-            if 'Add' in request.POST:
+            if 'add' in request.POST:
                 
                 if form_name.is_valid():
                     
@@ -109,35 +66,28 @@ def repo(request, repo_id):
 
                         if tag.name == old.name:
                             error = "Tag already used"
-                            return render(request, "network/repo.html", {
-                                "repo" : repo,
-                                "form_name" : form_name,    
-                                "error" : error,
-                                "form_del" : form_del,
-                                "form_edit" : form_edit,
-                                "form_new" : form_new,
+                            return render(request, "network/repo.html",{
+                                    "repo" : repo,
+                                    "form_name": RepoForm(),
+                                    "error" : error,
+                                    "form_del" : RepoForm(),
+                                    "form_edit" : RepoForm(),
+                                    "form_new" : EditForm(),
                             })
+           
                     
                     tag.save()
                     tag.repo.add(repo_id)
-                                    
                     return render(request, "network/repo.html",{
-                        "repo" : repo,
-                        "form_name": form_name,
-                        "error" : error,
-                        "form_del" : form_del,
-                        "form_edit" : form_edit,
-                        "form_new" : form_new,
+                                "repo" : repo,
+                                "form_name": RepoForm(),
+                                "error" : error,
+                                "form_del" : RepoForm(),
+                                "form_edit" : RepoForm(),
+                                "form_new" : EditForm(),
                     })
-                else:
-                    return render(request, "network/repo.html",{
-                        "repo" : repo,
-                        "form_name": form_name,
-                        "error" : error,
-                        "form_del" : form_del,
-                        "form_edit" : form_edit,
-                        "form_new" : form_new,
-                    }) 
+                                    
+                   
             elif 'delete' in request.POST:              
 
                 if form_del.is_valid():               
@@ -150,32 +100,35 @@ def repo(request, repo_id):
 
                         return render(request, "network/repo.html",{
                             "repo" : repo,
-                            "form_name": form_name,
+                            "form_name": RepoForm(),
                             "error" : error,
-                            "form_del" : form_del,
-                            "form_edit" : form_edit,
-                            "form_new" : form_new,
-                        }) 
+                            "form_del" : RepoForm(),
+                            "form_edit" : RepoForm(),
+                            "form_new" : EditForm(),
+                        })
+                    
                     except: 
                         error = "Can't find this tag to be deleted."
 
-                        return render(request, "network/repo.html",{
+                    return render(request, "network/repo.html",{
                             "repo" : repo,
-                            "form_name": form_name,
+                            "form_name": RepoForm(),
                             "error" : error,
-                            "form_del" : form_del,
-                            "form_edit" : form_edit,
-                            "form_new" : form_new,
-                        }) 
+                            "form_del" : RepoForm(),
+                            "form_edit" : RepoForm(),
+                            "form_new" : EditForm(),
+                    })
+                
                 else:  
                     return render(request, "network/repo.html",{
                         "repo" : repo,
-                        "form_name": form_name,
+                        "form_name": RepoForm(),
                         "error" : error,
-                        "form_del" : form_del,
-                        "form_edit" : form_edit,
-                        "form_new" : form_new,
-                    }) 
+                        "form_del" : RepoForm(),
+                        "form_edit" : RepoForm(),
+                         "form_new" : EditForm(),
+                    })
+
             elif 'edit' in request.POST:              
 
                 if form_edit.is_valid():               
@@ -194,42 +147,46 @@ def repo(request, repo_id):
 
                             return render(request, "network/repo.html",{
                                 "repo" : repo,
-                                "form_name": form_name,
+                                "form_name": RepoForm(),
                                 "error" : error,
-                                "form_del" : form_del,
-                                "form_edit" : form_edit,
-                                "form_new" : form_new,
-                            }) 
+                                "form_del" : RepoForm(),
+                                "form_edit" : RepoForm(),
+                                "form_new" : EditForm(),
+                            })
+                        
                         else: 
                             error = "new name is invalid"
                             return render(request, "network/repo.html",{
-                                "repo" : repo,
-                                "form_name": form_name,
-                                "error" : error,
-                                "form_del" : form_del,
-                                "form_edit" : form_edit,
-                                "form_new" : form_new,
-                    }) 
+                                    "repo" : repo,
+                                    "form_name": RepoForm(),
+                                    "error" : error,
+                                    "form_del" : RepoForm(),
+                                    "form_edit" : RepoForm(),
+                                    "form_new" : EditForm(),
+                             })
+                    
                     except: 
                         error = "No tag with this name to be changed"
 
                         return render(request, "network/repo.html",{
-                            "repo" : repo,
-                            "form_name": form_name,
-                            "error" : error,
-                            "form_del" : form_del,
-                            "form_edit" : form_edit,
-                            "form_new" : form_new,
-                        }) 
+                                "repo" : repo,
+                                "form_name": RepoForm(),
+                                "error" : error,
+                                "form_del" : RepoForm(),
+                                "form_edit" : RepoForm(),
+                                "form_new" : EditForm(),
+                        })
+                       
                 else: 
                     return render(request, "network/repo.html",{
-                        "repo" : repo,
-                        "form_name": form_name,
-                        "error" : error,
-                        "form_del" : form_del,
-                        "form_edit" : form_edit,
-                        "form_new" : form_new,
-                    }) 
+                            "repo" : repo,
+                            "form_name": RepoForm(),
+                            "error" : error,
+                            "form_del" : RepoForm(),
+                            "form_edit" : RepoForm(),
+                            "form_new" : EditForm(),
+                    })
+        
         return render(request, "network/repo.html",{
            "repo" : repo,
            "form_name": RepoForm(),
