@@ -5,17 +5,37 @@ from django.shortcuts import render
 from django.urls import reverse
 from .forms import RepoForm, EditForm
 from django.views.generic import CreateView
+from django.contrib.auth.decorators import login_required
+import requests, json
 
 from .models import User, Repo, Tag
 
+@login_required
 def index(request):
     
-    if "repos" not in request.session:
-        request.session["repos"] = []
-    
+    name = request.user.username 
+    r = requests.get(f"https://api.github.com/users/{name}/starred")
+    data = json.loads(r.content)
+    listId =[]
+
+    for index in data:
+        
+        repo = Repo(id = index["id"], name = index["name"], description = index["description"], 
+                    link = index["html_url"])
+        repo.save()
+        request.user.repos.add(repo)
+        listId.append(index["id"])
+
+
+    for x in request.user.repos.all():
+            if int(x.id) not in listId:
+                x.delete()
+                
+        
     return render(request, "network/index.html", {
-        "repos": Repo.objects.all(),
-        "tags": Tag.objects.all()
+        "repos": request.user.repos.all(),
+        "tags": Tag.objects.all(),
+        "data" : listId,
     })
 
 def login_view(request):

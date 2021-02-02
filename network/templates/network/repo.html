@@ -11,7 +11,7 @@
     {{error}}
     <ul>
         <li>Name: {{ repo.name }}</li>
-        <li>Descrition: {{ repo.desc}}</li>
+        <li>Description: {{ repo.description}}</li>
         <li>Link: {{ repo.link }}</li>
         <li>Tags: 
             {%for tag in repo.tags.all%}
@@ -32,4 +32,6 @@
         {{form_new}}
         <input type = "submit", value = "edit", name = "edit">
     </form>
+
+    
 {% endblock %}

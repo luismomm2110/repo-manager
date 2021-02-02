@@ -11,7 +11,7 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-    path("<int:repo_id>/repo", views.repo, name="repo"),
+    path("repo/<int:repo_id>", views.repo, name="repo"),
     url('', include('social_django.urls', namespace='social'))
 
 ]
