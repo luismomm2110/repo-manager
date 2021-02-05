@@ -19,22 +19,21 @@ def index(request):
     listId =[]
 
     for index in data:
-        
+
         repo = Repo(id = index["id"], name = index["name"], description = index["description"], 
                     link = index["html_url"])
         repo.save()
         request.user.repos.add(repo)
         listId.append(index["id"])
-
+        
 
     for x in request.user.repos.all():
-            if int(x.id) not in listId:
-                x.de
-        
+           if int(x.id) not in listId:
+               x.delete()
+
     return render(request, "network/index.html", {
         "repos": request.user.repos.all(),
-        "tags": Tag.objects.all(),
-        "data" : listId,
+        "tags": request.user.tags.all(),
     })
 
 def login_view(request):
@@ -45,155 +44,126 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("login"))
 
 def repo(request, repo_id):
-        repo = request.user.repos.get(id=repo_id)
-        error = ""
-        form_name = RepoForm(request.POST)
-        form_del = RepoForm(request.POST)
-        form_edit = RepoForm(request.POST)
-        form_new = EditForm(request.POST)
+       
+    error = ""
+    repo = request.user.repos.get(id = repo_id)
 
-        if request.method == "POST":
-
-            if 'add' in request.POST:
-                
-                if form_name.is_valid():
-                    
-                    name = form_name.cleaned_data["name"]
-                    tag = Tag(name=name.lower())
-                    allTags = repo.tags.all()
-                    
-                    for old in allTags:
-
-                        if tag.name == old.name:
-                            error = "Tag already used"
-                            return render(request, "network/repo.html",{
-                                    "repo" : repo,
-                                    "form_name": RepoForm(),
-                                    "error" : error,
-                                    "form_del" : RepoForm(),
-                                    "form_edit" : RepoForm(),
-                                    "form_new" : EditForm(),
-                            })
-           
-                    
-                    tag.save()
-                    tag.repo.add(repo_id)
-                    return render(request, "network/repo.html",{
-                                "repo" : repo,
-                                "form_name": RepoForm(),
-                                "error" : error,
-                                "form_del" : RepoForm(),
-                                "form_edit" : RepoForm(),
-                                "form_new" : EditForm(),
-                    })
-                                    
-                   
-            elif 'delete' in request.POST:              
-
-                if form_del.is_valid():               
-                    
-                    name = form_del.cleaned_data["name"]
-                    
-                    try:
-                        tag = Tag.objects.get(name = name.lower())
-                        tag.delete()
-
-                        return render(request, "network/repo.html",{
-                            "repo" : repo,
-                            "form_name": RepoForm(),
-                            "error" : error,
-                            "form_del" : RepoForm(),
-                            "form_edit" : RepoForm(),
-                            "form_new" : EditForm(),
-                        })
-                    
-                    except: 
-                        error = "Can't find this tag to be deleted."
-
-                    return render(request, "network/repo.html",{
-                            "repo" : repo,
-                            "form_name": RepoForm(),
-                            "error" : error,
-                            "form_del" : RepoForm(),
-                            "form_edit" : RepoForm(),
-                            "form_new" : EditForm(),
-                    })
-                
-                else:  
-                    return render(request, "network/repo.html",{
-                        "repo" : repo,
-                        "form_name": RepoForm(),
-                        "error" : error,
-                        "form_del" : RepoForm(),
-                        "form_edit" : RepoForm(),
-                         "form_new" : EditForm(),
-                    })
-
-            elif 'edit' in request.POST:              
-
-                if form_edit.is_valid():               
-                    
-                    name = form_edit.cleaned_data["name"]
-
-                    try:
-                        tag = Tag.objects.get(name = name.lower())
-                        
-                        if form_new.is_valid():
-                            tag.delete()
-                            newName = form_new.cleaned_data["newName"]
-                            newTag = Tag(name = newName.lower())
-                            newTag.save()
-                            newTag.repo.add(repo_id)
-
-                            return render(request, "network/repo.html",{
-                                "repo" : repo,
-                                "form_name": RepoForm(),
-                                "error" : error,
-                                "form_del" : RepoForm(),
-                                "form_edit" : RepoForm(),
-                                "form_new" : EditForm(),
-                            })
-                        
-                        else: 
-                            error = "new name is invalid"
-                            return render(request, "network/repo.html",{
-                                    "repo" : repo,
-                                    "form_name": RepoForm(),
-                                    "error" : error,
-                                    "form_del" : RepoForm(),
-                                    "form_edit" : RepoForm(),
-                                    "form_new" : EditForm(),
-                             })
-                    
-                    except: 
-                        error = "No tag with this name to be changed"
-
-                        return render(request, "network/repo.html",{
-                                "repo" : repo,
-                                "form_name": RepoForm(),
-                                "error" : error,
-                                "form_del" : RepoForm(),
-                                "form_edit" : RepoForm(),
-                                "form_new" : EditForm(),
-                        })
-                       
-                else: 
-                    return render(request, "network/repo.html",{
-                            "repo" : repo,
-                            "form_name": RepoForm(),
-                            "error" : error,
-                            "form_del" : RepoForm(),
-                            "form_edit" : RepoForm(),
-                            "form_new" : EditForm(),
-                    })
-        
-        return render(request, "network/repo.html",{
+    return render(request, "network/repo.html",{
            "repo" : repo,
            "form_name": RepoForm(),
            "error" : error,
-           "form_del" : RepoForm(),
-           "form_edit" : RepoForm(),
-           "form_new" : EditForm(),
-        })
+           "form_edit" : EditForm(),
+     })
 
+def add(request, repo_id):
+    
+    if request.method == "POST":
 
+        form_name = RepoForm(request.POST)
+
+        if form_name.is_valid():
+            
+            tagName = form_name.cleaned_data["name"].lower()
+            repo = Repo.objects.get(id= repo_id)
+
+            #se tag nao esta nesse usuario,se cria
+            if not any (x.name == tagName for x in request.user.tags.all()):
+        
+                tag = Tag(name = tagName.lower())
+                tag.save()
+                repo.tags.add(tag)
+                request.user.tags.add(tag)
+
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+            #se já existe nesse usuario, mas nao nesse repo, se adiciona para ela
+            elif not any (x.name == tagName for x in repo.tags.all()):
+                
+                tag= Tag.objects.get(name=tagName)
+                repo.tags.add(tag)
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+            else:
+                error="Tag already used"
+                
+                return render(request, "network/repo.html",{
+                "repo" : repo,
+                "form_name": RepoForm(),
+                "error" : error,
+                "form_edit" : EditForm(),
+            })
+            
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+def delete(request, repo_id):
+
+    if request.method == "POST":
+
+        repo = Repo.objects.get(pk=repo_id)
+
+        tag_id = int(request.POST["delete"])
+
+        tag = Tag.objects.get(pk=tag_id)
+
+        repo.tags.remove(tag)
+
+        if tag.repo.count() == 0:
+            tag.delete()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+def edit(request, repo_id):
+
+    if request.method == "POST":
+
+        tag_id = int(request.POST["edit"])
+
+        form_edit = EditForm(request.POST)
+
+        repo = Repo.objects.get(pk=repo_id)
+
+        if  form_edit.is_valid():
+
+            tagName = form_edit.cleaned_data['name'].lower()
+
+            if not any (x.name == tagName for x in repo.tags.all()):
+
+                repo = Repo.objects.get(pk=repo_id)
+
+                tag_id = int(request.POST["edit"])
+
+                tag = Tag.objects.get(pk=tag_id)
+                
+                repo.tags.remove(tag)
+
+                if tag.repo.count() == 0:
+                    tag.delete()
+
+                try:
+                    Tag.objects.get(name=tagName)
+                    newTag = Tag.objects.get(name=Tag)
+                    repo.tags.add(newTag)
+                        
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                    
+                except:
+                    tag = Tag(name = tagName.lower())
+                    tag.save()
+                    repo.tags.add(tag)
+                    request.user.tags.add(tag)
+
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+
+            else:
+                error="Tag already used"
+                
+                return render(request, "network/repo.html",{
+                "repo" : repo,
+                "form_name": RepoForm(),
+                "error" : error,
+                "form_edit" : EditForm(),
+            })               
+    
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))

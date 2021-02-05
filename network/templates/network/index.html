@@ -1,8 +1,6 @@
 {% extends "network/layout.html" %}
 {% load static %}
 
-<!--- TODO A TABLE FOR EVERY TAG-->
-
 {% block body %}
     <head> 
         <link rel="stylesheet" href="{% static 'network/styles.css' %}">
@@ -24,13 +22,12 @@
                     {{repo.name}}
                 </a> 
             <td> 
-                {%for tag in repo.tags.all%}
-                    {{tag.name}}
+                {%for tag in user.tags.all%}
+                    {% if tag in repo.tags.all %}
+                        {{tag.name}}
+                    {%endif%}
                 {%endfor%}
             </td>
        </tr>
     {% endfor %}
-{% endblock %}
-
-
-
+ {% endblock %}

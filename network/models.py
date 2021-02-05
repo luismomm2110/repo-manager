@@ -5,6 +5,7 @@ from django.db import models
 class User(AbstractUser):
     pass
 
+
 class Repo(models.Model):
     id = models.CharField(max_length=250, primary_key = True)
     name = models.CharField(max_length=64)
@@ -18,8 +19,8 @@ class Repo(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=64)
     repo = models.ManyToManyField(Repo, blank=False, related_name = "tags")
-   
+    user =  models.ManyToManyField(User, related_name="tags")
 
     def __str__(self):
-        return f"{self.id}: name: {self.name}"
+        return  f"{self.name}"
 
