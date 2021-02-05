@@ -45,5 +45,12 @@
     {{form_edit}} 
     <input type="submit", value = "edit">
     </form>
-  MENSAGE:  {{error}}
+  MESSAGE:  {{error}}
+ {% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

@@ -114,8 +114,7 @@ class  AddTestCase(TestCase):
                     "name" : "old tag"
         })
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["error"], "Tag already used")
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(repo18.tags.count(), 1)
 
 class  DelTestCase(TestCase):
@@ -196,7 +195,7 @@ class  EditTestCase(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-    #testa  se  nome    nao esta nas    tags    desse   repositorio
+    #testa se consegue editar quando nao ha outra com esse nome
     def test_edit_sucess(self):
 
         self.c.force_login(self.user23)
@@ -213,6 +212,37 @@ class  EditTestCase(TestCase):
         for x in repo24.tags.all():
             listNameTag.append(x.name)
 
+        self.assertEqual(response.status_code, 302)
         self.assertFalse("24" in listNameTag)
+
+    #testa se nao consegue mudar tag que ja esta no repositorio
+    def test_edit_already(self):
+        
+        self.c.force_login(self.user23)
+        repo24 = Repo.objects.create(id=24, name="24", description="A little test2", link="wwww.test.ts2")
+        self.user23.repos.add(repo24)
+        
+        tag25 = Tag.objects.create(id=25, name="25")
+        repo24.tags.add(tag25)
+        self.user23.tags.add(tag25)
+        
+        tag26 = Tag.objects.create(id=26, name="26")
+        repo24.tags.add(tag26)
+        self.user23.tags.add(tag26)
+        
+        response = self.c.post(f"/repo/{repo24.id}/edit",{
+            'edit' : '25',
+            'name' : '26',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(tag25.name,"25")
+
+
+
+
+
+
+
 
 

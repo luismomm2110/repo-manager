@@ -7,6 +7,8 @@ from .forms import RepoForm, EditForm
 from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
 import requests, json
+from django.contrib import messages
+from django.shortcuts import redirect
 
 from .models import User, Repo, Tag
 
@@ -69,31 +71,25 @@ def add(request, repo_id):
             #se tag nao esta nesse usuario,se cria
             if not any (x.name == tagName for x in request.user.tags.all()):
         
-                tag = Tag(name = tagName.lower())
-                tag.save()
+                tag = Tag.objects.create(name = tagName.lower())
                 repo.tags.add(tag)
                 request.user.tags.add(tag)
 
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                return HttpResponseRedirect(reverse('repo', args=[repo_id]))
 
             #se já existe nesse usuario, mas nao nesse repo, se adiciona para ela
             elif not any (x.name == tagName for x in repo.tags.all()):
                 
                 tag= Tag.objects.get(name=tagName)
                 repo.tags.add(tag)
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                return HttpResponseRedirect(reverse('repo', args=[repo_id]))
 
             else:
-                error="Tag already used"
+                messages.success(request, "Tag already used!")
                 
-                return render(request, "network/repo.html",{
-                "repo" : repo,
-                "form_name": RepoForm(),
-                "error" : error,
-                "form_edit" : EditForm(),
-            })
-            
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                return HttpResponseRedirect(reverse('repo', args=[repo_id]))
+    
+    return HttpResponseRedirect(reverse('repo', args=[repo_id]))
 
 def delete(request, repo_id):
 
@@ -107,12 +103,13 @@ def delete(request, repo_id):
 
         repo.tags.remove(tag)
 
+        #se ele nao pertence a nenhum repo, desaloca memoria
         if tag.repo.count() == 0:
             tag.delete()
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
-
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+        return HttpResponseRedirect(reverse('repo', args=[repo_id]))
+    
+    return HttpResponseRedirect(reverse('repo', args=[repo_id]))
 
 def edit(request, repo_id):
 
@@ -141,29 +138,24 @@ def edit(request, repo_id):
                 if tag.repo.count() == 0:
                     tag.delete()
 
+                #ve essa tag esta em outra repo para adicionar na atual
                 try:
                     Tag.objects.get(name=tagName)
                     newTag = Tag.objects.get(name=Tag)
                     repo.tags.add(newTag)
                         
-                    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                    return HttpResponseRedirect(reverse('repo', args=[repo_id]))
                     
                 except:
-                    tag = Tag(name = tagName.lower())
-                    tag.save()
+                    tag = Tag.objects.create(name = tagName.lower())
                     repo.tags.add(tag)
                     request.user.tags.add(tag)
 
-                    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                return HttpResponseRedirect(reverse('repo', args=[repo_id]))
 
             else:
-                error="Tag already used"
-                
-                return render(request, "network/repo.html",{
-                "repo" : repo,
-                "form_name": RepoForm(),
-                "error" : error,
-                "form_edit" : EditForm(),
-            })               
+                messages.success(request, "Tag already used!")
     
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
+                return HttpResponseRedirect(reverse('repo', args=[repo_id]))
+
+    return HttpResponseRedirect(reverse('repo', args=[repo_id]))
