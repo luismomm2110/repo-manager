@@ -1,5 +1,5 @@
 <h1> # repo-manager </h1>
-<h2> Projeto de administracao de tags no github, com pesquisa, adicao e exclusao. Social login com GitHub. Construído com django. </h2>
+<h2> A Django project to manage starred repositories in GitHub using tags </h2>
 
  **Instalacao:** 
 
